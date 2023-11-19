@@ -1,0 +1,48 @@
+body {
+  background-color: #cccccc2a; /* Light grey background color */
+}
+
+<style>
+  #game-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .stack {
+    margin-right: 20px; /* Adjust the spacing between stacks */
+  }
+
+  .column {
+    display: flex;
+    flex-direction: column-reverse; /* Stack cards in reverse order (top card on top) */
+    align-items: flex-start;
+  }
+
+  .card {
+    width: 60px;
+    height: 90px;
+    border: 1px solid #000;
+    border-radius: 5px;
+    margin-top: -30px; /* Overlap cards to create a cascading effect */
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .card.face-up {
+    transform: translateY(-20px); /* Lift face-up cards for visibility */
+  }
+
+  /* Adjust colors based on suit */
+  .card[data-suit="hearts"],
+  .card[data-suit="diamonds"] {
+    color: red;
+  }
+
+  .card[data-suit="clubs"],
+  .card[data-suit="spades"] {
+    color: black;
+  }
+</style>
