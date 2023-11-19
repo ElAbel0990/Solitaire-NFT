@@ -46,6 +46,17 @@ function renderGameBoard() {
   deck = createDeck(); // Assign the created deck to the global variable
   shuffle(deck);
 
+  const tableauStack = document.createElement("div");
+  tableauStack.classList.add("stack", "tableau");
+  gameContainer.appendChild(tableauStack);
+
+  const foundationStack = document.createElement("div");
+  foundationStack.classList.add("stack", "foundation");
+  gameContainer.appendChild(foundationStack);
+
+  // Initialize the tableau with cards
+  initializeTableau(tableauStack);
+
   for (let i = 0; i < 7; i++) {
     for (let j = 0; j <= i; j++) {
       const card = deck.pop();
@@ -66,22 +77,17 @@ function createCardElement(card) {
   // Add color based on suit
   switch (card.suit) {
     case "hearts":
-      cardElement.style.color = "red";
-      break;
     case "diamonds":
-      cardElement.style.color = "red";
+      cardElement.classList.add("red");
       break;
     case "clubs":
-      cardElement.style.color = "black";
-      break;
     case "spades":
-      cardElement.style.color = "black";
+      cardElement.classList.add("black");
       break;
     default:
       break;
   }
 
-  cardElement.addEventListener("click", handleCardClick);
   return cardElement;
 }
 
@@ -98,44 +104,76 @@ function getSuitSymbol(suit) {
       return "♠";
   }
 }
-
-// Modify the handleCardClick function to check for the win condition
 function handleCardClick() {
   const clickedCard = this;
 
-  if (!clickedCard.classList.contains("face-up")) {
-    // Flip the clicked card face-up
-    clickedCard.classList.add("face-up");
-
-    // Check for valid moves based on the solitaire rules
-    const validMove = isValidMove(clickedCard);
-
-    if (!validMove) {
-      // If the move is not valid, flip the card face-down
-      clickedCard.classList.remove("face-up");
-    }
-
-    // Check for win condition when all cards are face-up in the tableau
-    const tableauCards = document.querySelectorAll(".tableau .card");
-    const allCardsFaceUp = Array.from(tableauCards).every((card) =>
-      card.classList.contains("face-up")
-    );
-
-    // Check for win condition when there are no cards left in the deck
-    const noCardsInDeck = deck.length === 0;
-
-    if (allCardsFaceUp && noCardsInDeck) {
-      stopTimer();
-      const elapsedTime = calculateElapsedTime();
-      const rank = calculateRank(elapsedTime);
-
-      alert(
-        `Congratulations! You won!\nYour time: ${formatElapsedTime(
-          elapsedTime
-        )}\nRank: ${rank}`
-      );
-    }
+  // Check if the clicked card is face-up and can be moved
+  if (clickedCard.classList.contains("face-up") && canMove(clickedCard)) {
+    // Move the card
+    moveCard(clickedCard);
   }
+}
+
+// Function to move the clicked card
+function moveCard(clickedCard) {
+  // Implement your logic to move the card, e.g., change its parent stack
+  const sourceStack = clickedCard.parentElement;
+  const destinationStack = getDestinationStack(clickedCard);
+
+  if (destinationStack) {
+    destinationStack.appendChild(clickedCard);
+  }
+
+  // Check for win condition when all cards are face-up in the tableau
+  const tableauStacks = document.querySelectorAll(".tableau .column");
+  const allCardsFaceUp = Array.from(tableauStacks).every((stack) =>
+    stack.lastChild.classList.contains("face-up")
+  );
+
+  // Check for win condition when there are no cards left in the deck
+  const noCardsInDeck = deck.length === 0;
+
+  if (allCardsFaceUp && noCardsInDeck) {
+    stopTimer();
+    const elapsedTime = calculateElapsedTime();
+    const rank = calculateRank(elapsedTime);
+
+    alert(
+      `Congratulations! You won!\nYour time: ${formatElapsedTime(
+        elapsedTime
+      )}\nRank: ${rank}`
+    );
+  }
+}
+
+// Function to check if the clicked card can be moved
+function canMove(clickedCard) {
+  // Implement your specific rules here
+  // For example, you might check if the card can be placed on the next card in a sequential order with different colors
+  const destinationStack = getDestinationStack(clickedCard);
+
+  return destinationStack !== null;
+}
+
+// Function to get the destination stack for the clicked card
+function getDestinationStack(clickedCard) {
+  // Implement your logic to determine the destination stack
+  // Return the destination stack or null if the card cannot be moved
+
+  // Example: Move to the next column in the tableau
+  const sourceStack = clickedCard.parentElement;
+  const columnIndex = Array.from(sourceStack.parentElement.children).indexOf(
+    sourceStack
+  );
+  const tableauStacks = document.querySelectorAll(".tableau .column");
+  const nextColumnIndex = columnIndex + 1;
+
+  if (nextColumnIndex < tableauStacks.length) {
+    const destinationStack = tableauStacks[nextColumnIndex];
+    return destinationStack;
+  }
+
+  return null;
 }
 
 // Function to check if a move is valid
@@ -178,40 +216,6 @@ function padZero(number) {
 // Function to stop the timer
 function stopTimer() {
   clearInterval(timerInterval);
-}
-
-// Modify the handleCardClick function to check for the win condition
-function handleCardClick() {
-  const clickedCard = this;
-
-  if (!clickedCard.classList.contains("face-up")) {
-    // Flip the clicked card face-up
-    clickedCard.classList.add("face-up");
-  } else {
-    // Flip the clicked card face-down
-    clickedCard.classList.remove("face-up");
-  }
-
-  // Check for win condition when all cards are face-up in the tableau
-  const tableauCards = document.querySelectorAll(".tableau .card");
-  const allCardsFaceUp = Array.from(tableauCards).every((card) =>
-    card.classList.contains("face-up")
-  );
-
-  // Check for win condition when there are no cards left in the deck
-  const noCardsInDeck = deck.length === 0;
-
-  if (allCardsFaceUp && noCardsInDeck) {
-    stopTimer();
-    const elapsedTime = calculateElapsedTime();
-    const rank = calculateRank(elapsedTime);
-
-    alert(
-      `Congratulations! You won!\nYour time: ${formatElapsedTime(
-        elapsedTime
-      )}\nRank: ${rank}`
-    );
-  }
 }
 
 // Function to calculate elapsed time in seconds
@@ -257,11 +261,8 @@ function renderSolitaireGame() {
   initializeTableau(tableauStack);
 }
 
-// Function to initialize the tableau with cards
+// Function to initialize the tableau with cards in a solitaire layout
 function initializeTableau(tableauStack) {
-  const deck = createDeck(); // Create a new deck
-  shuffle(deck);
-
   for (let i = 0; i < 7; i++) {
     const column = document.createElement("div");
     column.classList.add("column");
@@ -269,6 +270,11 @@ function initializeTableau(tableauStack) {
     for (let j = 0; j <= i; j++) {
       const card = deck.pop();
       const cardElement = createCardElement(card);
+
+      if (j === i) {
+        cardElement.classList.add("top"); // Only show the top card in each column
+      }
+
       column.appendChild(cardElement);
     }
 
