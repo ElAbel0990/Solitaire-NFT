@@ -4,7 +4,7 @@ pragma solidity ^0.8.7;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Strings.sol";
+import "@openzeppelin/utils/Strings.sol";
 
 contract FirstGameNFT is ERC721Enumerable {
     using Strings for uint256;

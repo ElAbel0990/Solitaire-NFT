@@ -19,7 +19,15 @@ const values = [
 // Declare the deck as a global variable
 let deck;
 
-// Function to create a deck of cards
+// Shuffle function
+function shuffle(deck) {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+}
+
+//Function to create a deck of cards
 function createDeck() {
   const newDeck = [];
   for (const suit of suits) {
@@ -30,21 +38,16 @@ function createDeck() {
   return newDeck;
 }
 
-// Shuffle function
-function shuffle(deck) {
-  for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-}
-
 // Function to render the initial game board
 function renderGameBoard() {
   const gameContainer = document.getElementById("game-container");
   gameContainer.innerHTML = "";
 
-  deck = createDeck(); // Assign the created deck to the global variable
-  shuffle(deck);
+  // Check if there are enough cards in the deck
+  if (deck.length === 0) {
+    console.error("The deck is empty!");
+    return;
+  }
 
   const tableauStack = document.createElement("div");
   tableauStack.classList.add("stack", "tableau");
@@ -57,11 +60,23 @@ function renderGameBoard() {
   // Initialize the tableau with cards
   initializeTableau(tableauStack);
 
+  // Move the call to initializeTableau before rendering the initial game board
   for (let i = 0; i < 7; i++) {
     for (let j = 0; j <= i; j++) {
-      const card = deck.pop();
-      const cardElement = createCardElement(card);
-      gameContainer.appendChild(cardElement);
+      // Check if there are enough cards in the deck
+      if (deck.length > 0) {
+        const card = deck.pop();
+        const cardElement = createCardElement(card);
+
+        if (j === i) {
+          cardElement.classList.add("top"); // Only show the top card in each column
+        }
+
+        cardElement.addEventListener("click", handleCardClick);
+        gameContainer.appendChild(cardElement);
+      } else {
+        console.error("The deck is empty!");
+      }
     }
   }
 }
@@ -70,6 +85,14 @@ function renderGameBoard() {
 function createCardElement(card) {
   const cardElement = document.createElement("div");
   cardElement.classList.add("card");
+
+  if (!card) {
+    // Handle the case when the deck is empty
+    // For example, you might want to set a default state or log an error
+    console.error("The deck is empty!");
+    return cardElement;
+  }
+
   cardElement.dataset.suit = card.suit;
   cardElement.dataset.value = card.value;
   cardElement.textContent = `${card.value} ${getSuitSymbol(card.suit)}`;
@@ -155,25 +178,48 @@ function canMove(clickedCard) {
   return destinationStack !== null;
 }
 
-// Function to get the destination stack for the clicked card
 function getDestinationStack(clickedCard) {
-  // Implement your logic to determine the destination stack
-  // Return the destination stack or null if the card cannot be moved
-
-  // Example: Move to the next column in the tableau
-  const sourceStack = clickedCard.parentElement;
-  const columnIndex = Array.from(sourceStack.parentElement.children).indexOf(
-    sourceStack
-  );
+  // Find the tableau stacks
   const tableauStacks = document.querySelectorAll(".tableau .column");
-  const nextColumnIndex = columnIndex + 1;
 
-  if (nextColumnIndex < tableauStacks.length) {
-    const destinationStack = tableauStacks[nextColumnIndex];
-    return destinationStack;
+  // Iterate through the stacks to find a valid destination
+  for (const destinationStack of tableauStacks) {
+    // Skip the source stack
+    if (destinationStack === clickedCard.parentElement) {
+      continue;
+    }
+
+    // Check if the card can be moved to the destination stack
+    if (canMoveToStack(clickedCard, destinationStack)) {
+      return destinationStack;
+    }
   }
 
-  return null;
+  return null; // No valid destination found
+}
+
+// Function to check if a card can be moved to a specific stack
+function canMoveToStack(clickedCard, destinationStack) {
+  const topCard = destinationStack.lastChild;
+
+  // If the stack is empty, only allow kings to be moved
+  if (!topCard) {
+    return clickedCard.dataset.value === "K";
+  }
+
+  // Check if the values are sequential and the colors are different
+  const clickedValue = values.indexOf(clickedCard.dataset.value);
+  const topCardValue = values.indexOf(topCard.dataset.value);
+  const clickedSuit = clickedCard.dataset.suit;
+  const topCardSuit = topCard.dataset.suit;
+
+  return (
+    (topCardValue - 1 === clickedValue &&
+      (topCardSuit === "hearts" || topCardSuit === "diamonds") &&
+      (clickedSuit === "clubs" || clickedSuit === "spades")) ||
+    ((topCardSuit === "clubs" || topCardSuit === "spades") &&
+      (clickedSuit === "hearts" || clickedSuit === "diamonds"))
+  );
 }
 
 // Function to check if a move is valid
@@ -261,31 +307,52 @@ function renderSolitaireGame() {
   initializeTableau(tableauStack);
 }
 
-// Function to initialize the tableau with cards in a solitaire layout
 function initializeTableau(tableauStack) {
+  if (!tableauStack) {
+    console.error("Tableau stack element not found");
+    return;
+  }
+
   for (let i = 0; i < 7; i++) {
     const column = document.createElement("div");
     column.classList.add("column");
 
     for (let j = 0; j <= i; j++) {
-      const card = deck.pop();
-      const cardElement = createCardElement(card);
+      // Check if there are enough cards in the deck
+      if (deck.length > 0) {
+        const card = deck.pop();
+        const cardElement = createCardElement(card);
 
-      if (j === i) {
-        cardElement.classList.add("top"); // Only show the top card in each column
+        if (j === i) {
+          cardElement.classList.add("top"); // Only show the top card in each column
+        }
+
+        cardElement.addEventListener("click", handleCardClick);
+        column.appendChild(cardElement);
+      } else {
+        console.error("The deck is empty!");
+        return; // Stop the function if the deck is empty
       }
-
-      column.appendChild(cardElement);
     }
 
     tableauStack.appendChild(column);
   }
 }
 
+// Call the function to initialize the tableau stacks
+const tableauStack = document.querySelector(".tableau");
+initializeTableau(tableauStack);
+
+// Initialize the deck
+deck = createDeck();
+shuffle(deck);
+
+// Call the function to initialize the tableau stacks
+initializeTableau(document.querySelector(".tableau"));
+
+// Render the game board after starting the timer
+renderGameBoard();
+startTimer(); // Start the timer after the game board is rendered
+
 // Call the function to render the solitaire game
 renderSolitaireGame();
-
-// Initialize the game
-shuffle(deck);
-renderGameBoard(); // Render the game board after starting the timer
-startTimer(); // Start the timer after the game board is rendered

@@ -2,47 +2,62 @@ body {
   background-color: #cccccc2a; /* Light grey background color */
 }
 
-<style>
-  #game-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    margin-top: 20px;
-  }
+/* Add this CSS to style the cards and stacks */
+#game-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
 
-  .stack {
-    margin-right: 20px; /* Adjust the spacing between stacks */
-  }
+.stack {
+  margin: 10px;
+}
 
-  .column {
-    display: flex;
-    flex-direction: column-reverse; /* Stack cards in reverse order (top card on top) */
-    align-items: flex-start;
-  }
+.column {
+  display: flex;
+  flex-direction: column-reverse; /* Reverse to make the cards appear in a cascading manner */
+}
 
-  .card {
-    width: 60px;
-    height: 90px;
-    border: 1px solid #000;
-    border-radius: 5px;
-    margin-top: -30px; /* Overlap cards to create a cascading effect */
-    cursor: pointer;
-    transition: transform 0.2s ease-in-out;
-  }
+.card {
+  width: 60px;
+  height: 80px;
+  border: 1px solid #333;
+  border-radius: 5px;
+  margin: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-  .card.face-up {
-    transform: translateY(-20px); /* Lift face-up cards for visibility */
-  }
+.card.red {
+  color: red;
+}
 
-  /* Adjust colors based on suit */
-  .card[data-suit="hearts"],
-  .card[data-suit="diamonds"] {
-    color: red;
-  }
+.card.black {
+  color: black;
+}
 
-  .card[data-suit="clubs"],
-  .card[data-suit="spades"] {
-    color: black;
-  }
-</style>
+.card.top {
+  z-index: 1; /* Ensure the top card is above the others in the column */
+}
+
+/* Add any additional styling as needed */
+
+.card.face-up {
+  transform: translateY(-20px); /* Lift face-up cards for visibility */
+}
+
+/* Adjust colors based on suit */
+.card[data-suit="hearts"],
+.card[data-suit="diamonds"] {
+  color: red;
+}
+
+.card[data-suit="clubs"],
+.card[data-suit="spades"] {
+  color: black;
+}
